@@ -2,3 +2,5 @@
 **/venv/
 **/*.pyc
 /data/**
+/logs/**
+/saved_models/**
