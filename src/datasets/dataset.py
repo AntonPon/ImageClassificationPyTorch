@@ -1,0 +1,57 @@
+from torch.utils.data import Dataset
+import os
+import csv
+import cv2
+import numpy as np
+
+
+class CustomDataset(Dataset):
+
+    def get_annot_list(self, path_to_annot):
+        final_list = []
+        with open(path_to_annot) as file:
+            csv_reader = csv.reader(file)
+            for row in csv_reader:
+                final_list.append(row)
+        return final_list
+
+    def __init__(self, path_to_data, path_to_annot, transforms=None):
+        super(CustomDataset, self).__init__()
+        self.annot_list = self.get_annot_list(path_to_annot)
+        self.data_path = path_to_data
+        self.transforms = transforms
+
+    def __len__(self):
+        return len(self.annot_list)
+
+    def __getitem__(self, item):
+        item_list = self.annot_list[item]
+
+        image_path = os.path.join(self.data_path, item_list[0])
+        labels = [float(label) for label in item_list[1:]]
+        image = self.get_image(image_path, self.transforms)
+        print(np.array(labels).shape, np.array(labels).reshape(-1, 1, 1).shape)
+        print(image.shape, np.array(labels).reshape(-1, 1).shape)
+        #return {'image': image, 'labels': np.array(labels).reshape(-1)}
+        return (image, np.array(labels).reshape(-1, 1))
+
+
+    def get_image(self, img_path, transforms):
+        img = cv2.imread(img_path)
+        if img is None:
+            raise ValueError('cannot open the image: {}'.format(img_path))
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        if transforms is not None:
+            augmented = transforms(image=img)
+            img = augmented['image']
+        img = np.transpose(img, (-1, 0, 1))
+        return img
+
+
+if __name__ == '__main__':
+    path_to_annot = '../../notebooks/val_0_4167.csv'
+    path_to_data = '../../data/val2017'
+    dataset = CustomDataset(path_to_data=path_to_data, path_to_annot=path_to_annot)
+    print(dataset[3])
+    #print(*[1,2 ,4 ])
