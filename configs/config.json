@@ -1,0 +1,23 @@
+{
+  "epochs": 20,
+  "cuda_usage": false,
+  "img_size": [728, 728],
+  "batch_size": 4,
+  "workers_num": 1,
+  "learning_rate": 1e-5,
+  "learning_rate_step": 30,
+  "path_to_data": {
+    "train_img": "../data/train2017",
+    "train_annot": "../data/csv/train_0_10000.csv",
+    "val_img": "../data/val2017",
+    "val_annot": "../data/csv/val_0_4167.csv"
+  },
+  "path_to_load_model": null,
+  "output_classes":19,
+  "train_model": true,
+  "info_paths": {
+    "save_dir": "../saved_models",
+    "log_dir": "../logs"
+  }
+}
+
