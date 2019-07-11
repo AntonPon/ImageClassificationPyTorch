@@ -7,8 +7,8 @@ from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
 from train_val import train, val
 from datasets.dataset import CustomDataset
-from torchvision.models import resnet18
-
+#from torchvision.models import resnet18
+from models.model import CustomResnet18
 
 def get_data_loaders(path_to_data, batch_size=1, workers_num=1):
     if path_to_data['train_img'] is not None and path_to_data['train_annot'] is not None:
@@ -41,7 +41,6 @@ def main(config_path):
     elif path_to_config.suffix.lower() != '.json' or not path_to_config.is_file():
         raise ValueError('{} is not .json config file'.format(path_to_config))
 
-    print(path_to_config)
     model_configs = load_json(path_to_config)
 
     path_to_data = model_configs['path_to_data']
@@ -49,10 +48,7 @@ def main(config_path):
     workers_num = model_configs['workers_num']
     batch_size = model_configs['batch_size']
     data_loaders = get_data_loaders(path_to_data, batch_size, workers_num)
-    #print(data_loaders["train"][:4])
-    model = resnet18()
-    for i in data_loaders['val']:
-        print(i)
+    model = CustomResnet18(True)
     device = 'cpu'
     device_count = 0
     if cuda.is_available() and model_configs['cuda_usage']:
@@ -64,7 +60,7 @@ def main(config_path):
     elif device is not 'cpu':
         model = model.cuda()
 
-    criterion = None
+    criterion = nn.BCEWithLogitsLoss(reduction=None)
     metric = None
     optimizer = optim.SGD(model.parameters(), lr=model_configs['learning_rate'], momentum=0.9)
 
@@ -72,13 +68,13 @@ def main(config_path):
 
     writer = SummaryWriter(logdir=info_paths['log_dir'])
     total_epochs = model_configs['epochs']
-    '''
+
     for epoch in range(total_epochs):
         model.train()
         train(model, data_loaders['train'], epoch, optimizer, criterion, metric, writer, device=device)
         model.val()
         val(model, criterion, metric, data_loaders['val'], epoch, writer, device=device)
-    '''
+
 
 
 if __name__ == '__main__':

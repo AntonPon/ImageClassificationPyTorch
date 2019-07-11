@@ -7,10 +7,11 @@ def train(model, data_loader, epoch, optimizer, criterion, metric, board_writer=
     train_miou = 0.
     scalars_dict = {'train/loss': 0, 'train/miou': 0}
     data_len = len(data_loader)
-    pbar = tqdm(enumerate(data_loader), data_len, desc='epoch: {} train'.format(epoch))
+    pbar = tqdm(enumerate(data_loader), total=data_len, desc='epoch: {} train'.format(epoch))
     for idx, input_batch in pbar:
-        img_batch = input_batch['imgs'].to(device)
-        masks_batch = input_batch['masks'].to(device)
+        print(input_batch['image'].to().type())
+        img_batch = input_batch['image'].type(torch.FloatTensor).to(device)
+        masks_batch = input_batch['labels'].to(device)
 
         optimizer.zero_grad()
         output_masks = model(img_batch)
@@ -19,13 +20,15 @@ def train(model, data_loader, epoch, optimizer, criterion, metric, board_writer=
         loss.backward()
         optimizer.step()
 
-        train_loss += loss.item()
+        #train_loss += loss.item()
+        print(loss)
+        '''
         train_miou += metric(masks_batch, output_masks).item()
     if board_writer is not None:
         scalars_dict['train/loss'] = train_loss / data_len
         scalars_dict['train/miou'] = train_miou / data_len
         log_scalars(board_writer, scalars_dict, epoch)
-
+        '''
 
 def val(model, criterion, metric, data_loader, epoch, board_writer, device='cpu'):
     with torch.no_grad():
