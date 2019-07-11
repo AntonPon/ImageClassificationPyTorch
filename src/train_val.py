@@ -9,8 +9,7 @@ def train(model, data_loader, epoch, optimizer, criterion, metric, board_writer=
     data_len = len(data_loader)
     pbar = tqdm(enumerate(data_loader), total=data_len, desc='epoch: {} train'.format(epoch))
     for idx, input_batch in pbar:
-        print(input_batch['image'].to().type())
-        img_batch = input_batch['image'].type(torch.FloatTensor).to(device)
+        img_batch = input_batch['image'].to(device)
         masks_batch = input_batch['labels'].to(device)
 
         optimizer.zero_grad()

@@ -3,7 +3,7 @@ import os
 import csv
 import cv2
 import numpy as np
-
+from torch import from_numpy, FloatTensor
 
 class CustomDataset(Dataset):
 
@@ -38,13 +38,21 @@ class CustomDataset(Dataset):
         if img is None:
             raise ValueError('cannot open the image: {}'.format(img_path))
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = normalize(img)
 
         if transforms is not None:
             augmented = transforms(image=img)
             img = augmented['image']
         img = np.transpose(img, (-1, 0, 1))
+        img = from_numpy(img).type(FloatTensor)
         return img
 
+
+
+def normalize(img):
+    mean = np.array([[[0.485, 0.456, 0.406]]])
+    std = np.array([[[0.229, 0.224, 0.225]]])
+    return (img.astype(np.float32)-mean)/std
 
 if __name__ == '__main__':
     path_to_annot = '../../notebooks/val_0_4167.csv'
