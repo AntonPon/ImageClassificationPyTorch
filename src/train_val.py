@@ -36,7 +36,7 @@ def val(model, criterion, metric, data_loader, epoch, board_writer, device='cpu'
         val_miou = 0.
         scalars_dict = {'val/loss': 0, 'val/miou': 0}
         data_len = len(data_loader)
-        pbar = tqdm(enumerate(data_loader), data_len, desc='poch: {} val'.format(epoch))
+        pbar = tqdm(enumerate(data_loader), total=data_len, desc='poch: {} val'.format(epoch))
         for idx, input_batch in pbar:
             img_batch = input_batch['imgs'].to(device)
             masks_batch = input_batch['masks'].to(device)

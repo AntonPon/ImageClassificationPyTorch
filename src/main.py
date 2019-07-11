@@ -7,7 +7,6 @@ from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
 from train_val import train, val
 from datasets.dataset import CustomDataset
-#from torchvision.models import resnet18
 from models.model import CustomResnet18
 
 def get_data_loaders(path_to_data, batch_size=1, workers_num=1):
@@ -48,20 +47,26 @@ def main(config_path):
     workers_num = model_configs['workers_num']
     batch_size = model_configs['batch_size']
     data_loaders = get_data_loaders(path_to_data, batch_size, workers_num)
+
     model = CustomResnet18(True)
+    criterion = nn.BCEWithLogitsLoss(reduction=None)
+    metric = None
+
+
     device = 'cpu'
     device_count = 0
     if cuda.is_available() and model_configs['cuda_usage']:
         device = 'cuda'
         device_count = cuda.device_count()
 
+    criterion.to(device)
+    metric.to(device)
+
     if device is not 'cpu' and device_count > 1:
         model = nn.DataParallel(model).cuda()
     elif device is not 'cpu':
         model = model.cuda()
 
-    criterion = nn.BCEWithLogitsLoss(reduction=None)
-    metric = None
     optimizer = optim.SGD(model.parameters(), lr=model_configs['learning_rate'], momentum=0.9)
 
     info_paths = model_configs['info_paths']

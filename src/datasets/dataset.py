@@ -43,7 +43,6 @@ class CustomDataset(Dataset):
             augmented = transforms(image=img)
             img = augmented['image']
         img = np.transpose(img, (-1, 0, 1))
-        img = img / 1.
         return img
 
 
