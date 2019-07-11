@@ -2,7 +2,7 @@
   "epochs": 20,
   "cuda_usage": false,
   "img_size": [728, 728],
-  "batch_size": 4,
+  "batch_size": 1,
   "workers_num": 1,
   "learning_rate": 1e-5,
   "learning_rate_step": 30,
