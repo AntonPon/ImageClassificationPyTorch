@@ -30,10 +30,7 @@ class CustomDataset(Dataset):
         image_path = os.path.join(self.data_path, item_list[0])
         labels = [float(label) for label in item_list[1:]]
         image = self.get_image(image_path, self.transforms)
-        print(np.array(labels).shape, np.array(labels).reshape(-1, 1, 1).shape)
-        print(image.shape, np.array(labels).reshape(-1, 1).shape)
-        #return {'image': image, 'labels': np.array(labels).reshape(-1)}
-        return (image, np.array(labels).reshape(-1, 1))
+        return {'image': image, 'labels': np.array(labels)}
 
 
     def get_image(self, img_path, transforms):
@@ -46,6 +43,7 @@ class CustomDataset(Dataset):
             augmented = transforms(image=img)
             img = augmented['image']
         img = np.transpose(img, (-1, 0, 1))
+        img = img / 1.
         return img
 
 
@@ -54,4 +52,3 @@ if __name__ == '__main__':
     path_to_data = '../../data/val2017'
     dataset = CustomDataset(path_to_data=path_to_data, path_to_annot=path_to_annot)
     print(dataset[3])
-    #print(*[1,2 ,4 ])
