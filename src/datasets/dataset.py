@@ -10,10 +10,12 @@ class CustomDataset(Dataset):
 
     def get_annot_list(self, path_to_annot):
         final_list = []
+        ignore_elements = ['2017_24086860.jpg', '2017_17704629.gif', '2017_79148221.gif', '2017_38643152.gif']
         with open(path_to_annot) as file:
             csv_reader = csv.reader(file)
             for row in csv_reader:
-                final_list.append(row)
+                if row[0] not in ignore_elements:
+                    final_list.append(row)
         return final_list
 
     def __init__(self, path_to_data, path_to_annot, transforms=None):
