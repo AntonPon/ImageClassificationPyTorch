@@ -2,7 +2,7 @@
   "epochs": 20,
   "cuda_usage": false,
   "img_size": [728, 728],
-  "batch_size": 1,
+  "batch_size": 5,
   "workers_num": 1,
   "learning_rate": 1e-5,
   "learning_rate_step": 30,
@@ -13,6 +13,7 @@
     "val_annot": "../data/csv/val_0_4167.csv"
   },
   "path_to_load_model": null,
+  "path_to_save_model": "../saved_models/",
   "output_classes":19,
   "train_model": true,
   "info_paths": {
