@@ -46,8 +46,8 @@ class CustomDataset(Dataset):
 
 
         if transforms is not None:
-            augmented = transforms(image=img)
-            img = augmented['image']
+            img = transforms.augment_image(img)
+            #img = augmented['image']
         img = np.transpose(img, (-1, 0, 1))
         img = torch.from_numpy(img).type(torch.FloatTensor)
         return img

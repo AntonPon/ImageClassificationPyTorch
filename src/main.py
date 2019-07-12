@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 
 from torch import cuda, nn, optim, save
+from imgaug import augmenters as iaa
 from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
 from train_val import train, val
@@ -11,10 +12,10 @@ from datasets.dataset import CustomDataset
 from metrics.confus_matrix import ConfMatrix
 from models.model import CustomResnet18
 
-def get_data_loaders(path_to_data, batch_size=1, workers_num=1):
+def get_data_loaders(path_to_data, transforms, batch_size=1, workers_num=1):
     if path_to_data['train_img'] is not None and path_to_data['train_annot'] is not None:
-        train_data_loaders = DataLoader(CustomDataset(path_to_data['train_img'], path_to_data['train_annot']), batch_size,
-                                        num_workers=workers_num)
+        train_data_loaders = DataLoader(CustomDataset(path_to_data['train_img'], path_to_data['train_annot'],
+                                                      transforms=transforms), batch_size, num_workers=workers_num)
     else:
         train_data_loaders = None
     if path_to_data['val_img'] is not None and path_to_data['val_annot'] is not None:
@@ -48,7 +49,11 @@ def main(config_path):
     train_model = model_configs['train_model']
     workers_num = model_configs['workers_num']
     batch_size = model_configs['batch_size']
-    data_loaders = get_data_loaders(path_to_data, batch_size, workers_num)
+
+    transforms = iaa.Sequential([
+    iaa.Crop(px=220)
+    ])
+    data_loaders = get_data_loaders(path_to_data, transforms, batch_size, workers_num)
 
     model = CustomResnet18(True)
     criterion = nn.BCEWithLogitsLoss()
