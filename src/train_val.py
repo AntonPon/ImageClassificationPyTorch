@@ -16,10 +16,11 @@ def train(model, data_loader, epoch, optimizer, criterion, metric, board_writer=
 
         optimizer.zero_grad()
         output_masks = model(img_batch)
-        loss = 0
+        loss = 0.
         for i in range(output_masks.shape[1]):
-            loss += criterion(masks_batch[:, i].reshape(-1 , 1), output_masks[:, i].reshape(-1, 1))
-            results = metric(masks_batch[:, i].reshape(-1 , 1), output_masks[:, i].reshape(-1, 1), threshold)
+            loss += criterion(output_masks[:, i].reshape(-1, 1), masks_batch[:, i].reshape(-1, 1))
+            results = metric( output_masks[:, i].reshape(-1, 1), masks_batch[:, i].reshape(-1 , 1), threshold)
+            #print('results: ', results)
             train_true_positive += results[0]
             train_false_positive += results[1]
             train_false_negative += results[2]
@@ -27,7 +28,7 @@ def train(model, data_loader, epoch, optimizer, criterion, metric, board_writer=
         loss.backward()
         optimizer.step()
         train_loss += loss.item()
-
+    #print(train_true_positive, train_false_positive, train_false_negative)
     precision = train_true_positive / (train_true_positive + train_false_positive)
     recall = train_true_positive / (train_true_positive + train_false_negative)
     f1_score = 2 * (precision * recall / (precision + recall))
@@ -53,15 +54,15 @@ def val(model, criterion, metric, data_loader, epoch, board_writer, device='cpu'
         data_len = len(data_loader)
         pbar = tqdm(enumerate(data_loader), total=data_len, desc='poch: {} val'.format(epoch))
         for idx, input_batch in pbar:
-            img_batch = input_batch['imgs'].to(device)
-            masks_batch = input_batch['masks'].to(device)
+            img_batch = input_batch['image'].to(device)
+            masks_batch = input_batch['labels'].to(device)
 
             output_masks = model(img_batch)
 
             loss = 0
             for i in range(output_masks.shape[1]):
-                loss += criterion(masks_batch[:, i].reshape(-1, 1), output_masks[:, i].reshape(-1, 1))
-                results = metric(masks_batch[:, i].reshape(-1, 1), output_masks[:, i].reshape(-1, 1), threshold)
+                loss += criterion( output_masks[:, i].reshape(-1, 1), masks_batch[:, i].reshape(-1, 1))
+                results = metric(output_masks[:, i].reshape(-1, 1), masks_batch[:, i].reshape(-1 , 1), threshold)
                 val_true_positive += results[0]
                 val_false_positive += results[1]
                 val_false_negative += results[2]

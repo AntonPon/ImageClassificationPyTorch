@@ -1,8 +1,9 @@
 import click
 import json
+import os
 from pathlib import Path
 
-from torch import cuda, nn, optim
+from torch import cuda, nn, optim, save
 from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
 from train_val import train, val
@@ -75,11 +76,11 @@ def main(config_path):
     writer = SummaryWriter(logdir=info_paths['log_dir'])
     total_epochs = model_configs['epochs']
 
-    f1_score = 0.
+    best_f1_score = 0.
     for epoch in range(total_epochs):
         model.train()
         train(model, data_loaders['train'], epoch, optimizer, criterion, metric, writer, device=device)
-        model.val()
+        model.eval()
         pr, recall, f1_score = val(model, criterion, metric, data_loaders['val'], epoch, writer, device=device)
         if f1_score > best_f1_score:
             best_f1_score = f1_score
