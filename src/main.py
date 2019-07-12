@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
 from train_val import train, val
 from datasets.dataset import CustomDataset
+from metrics.confus_matrix import ConfMatrix
 from models.model import CustomResnet18
 
 def get_data_loaders(path_to_data, batch_size=1, workers_num=1):
@@ -49,8 +50,8 @@ def main(config_path):
     data_loaders = get_data_loaders(path_to_data, batch_size, workers_num)
 
     model = CustomResnet18(True)
-    criterion = nn.BCEWithLogitsLoss(reduction=None)
-    metric = None
+    criterion = nn.BCEWithLogitsLoss()
+    metric = ConfMatrix()
 
 
     device = 'cpu'
@@ -74,12 +75,16 @@ def main(config_path):
     writer = SummaryWriter(logdir=info_paths['log_dir'])
     total_epochs = model_configs['epochs']
 
+    f1_score = 0.
     for epoch in range(total_epochs):
         model.train()
         train(model, data_loaders['train'], epoch, optimizer, criterion, metric, writer, device=device)
         model.val()
-        val(model, criterion, metric, data_loaders['val'], epoch, writer, device=device)
-
+        pr, recall, f1_score = val(model, criterion, metric, data_loaders['val'], epoch, writer, device=device)
+        if f1_score > best_f1_score:
+            best_f1_score = f1_score
+            path_to_save = os.path.join(model_configs['path_to_save_model'], 'best_model_{}.pth'.format(epoch))
+            save(model.state_dict(), path_to_save)
 
 
 if __name__ == '__main__':
