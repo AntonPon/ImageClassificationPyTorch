@@ -3,7 +3,8 @@ import os
 import csv
 import cv2
 import numpy as np
-from torch import from_numpy, FloatTensor
+import torch
+#from torch import FloatTensor
 
 class CustomDataset(Dataset):
 
@@ -30,7 +31,7 @@ class CustomDataset(Dataset):
         image_path = os.path.join(self.data_path, item_list[0])
         labels = [float(label) for label in item_list[1:]]
         image = self.get_image(image_path, self.transforms)
-        return {'image': image, 'labels': np.array(labels)}
+        return {'image': image, 'labels': torch.from_numpy(np.array(labels)).type(torch.FloatTensor)}
 
 
     def get_image(self, img_path, transforms):
@@ -38,13 +39,15 @@ class CustomDataset(Dataset):
         if img is None:
             raise ValueError('cannot open the image: {}'.format(img_path))
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = cv2.resize(img, (512, 512))
         img = normalize(img)
+
 
         if transforms is not None:
             augmented = transforms(image=img)
             img = augmented['image']
         img = np.transpose(img, (-1, 0, 1))
-        img = from_numpy(img).type(FloatTensor)
+        img = torch.from_numpy(img).type(torch.FloatTensor)
         return img
 
 
@@ -55,7 +58,7 @@ def normalize(img):
     return (img.astype(np.float32)-mean)/std
 
 if __name__ == '__main__':
-    path_to_annot = '../../notebooks/val_0_4167.csv'
+    path_to_annot = '../../data/csv/val_0_4167.csv'
     path_to_data = '../../data/val2017'
     dataset = CustomDataset(path_to_data=path_to_data, path_to_annot=path_to_annot)
     print(dataset[3])
