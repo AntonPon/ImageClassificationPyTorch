@@ -20,7 +20,7 @@ class CustomDataset(Dataset):
 
     def __init__(self, path_to_data, path_to_annot, transforms=None):
         super(CustomDataset, self).__init__()
-        self.annot_list = self.get_annot_list(path_to_annot)
+        self.annot_list = self.get_annot_list(path_to_annot)[:100]
         self.data_path = path_to_data
         self.transforms = transforms
 
