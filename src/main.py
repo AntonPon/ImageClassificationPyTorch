@@ -4,7 +4,8 @@ import os
 from pathlib import Path
 
 from torch import cuda, nn, optim, save
-from imgaug import augmenters as iaa
+#from imgaug import augmenters as iaa
+from albumentations import Compose, Resize, Normalize
 from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
 from train_val import train, val
@@ -12,15 +13,15 @@ from datasets.dataset import CustomDataset
 from metrics.confus_matrix import ConfMatrix
 from models.model import CustomResnet18
 
-def get_data_loaders(path_to_data, transforms, batch_size=1, workers_num=1):
+def get_data_loaders(path_to_data, transforms, transforms_val, batch_size=1, workers_num=1):
     if path_to_data['train_img'] is not None and path_to_data['train_annot'] is not None:
         train_data_loaders = DataLoader(CustomDataset(path_to_data['train_img'], path_to_data['train_annot'],
                                                       transforms=transforms), batch_size, num_workers=workers_num)
     else:
         train_data_loaders = None
     if path_to_data['val_img'] is not None and path_to_data['val_annot'] is not None:
-        val_data_loaders = DataLoader(CustomDataset(path_to_data['val_img'], path_to_data['val_annot']), batch_size,
-                                        num_workers=workers_num)
+        val_data_loaders = DataLoader(CustomDataset(path_to_data['val_img'], path_to_data['val_annot'],
+                                                    transforms=transforms_val), batch_size, num_workers=workers_num)
 
     else:
         val_data_loaders = None
@@ -49,11 +50,19 @@ def main(config_path):
     train_model = model_configs['train_model']
     workers_num = model_configs['workers_num']
     batch_size = model_configs['batch_size']
+    img_size = model_configs['img_size']
 
-    transforms = iaa.Sequential([
-    iaa.Crop(px=220)
-    ])
-    data_loaders = get_data_loaders(path_to_data, transforms, batch_size, workers_num)
+    transforms = Compose([Resize(*img_size),
+                          Normalize(
+                              mean=[0.485, 0.456, 0.406],
+                              std=[0.229, 0.224, 0.225])])
+
+    transforms_val = Compose([Resize(*img_size),
+                          Normalize(
+                              mean=[0.485, 0.456, 0.406],
+                              std=[0.229, 0.224, 0.225])])
+
+    data_loaders = get_data_loaders(path_to_data, transforms, transforms_val, batch_size, workers_num)
 
     model = CustomResnet18(True)
     criterion = nn.BCEWithLogitsLoss()
@@ -61,15 +70,13 @@ def main(config_path):
 
 
     device = 'cpu'
-    device_count = 0
     if cuda.is_available() and model_configs['cuda_usage']:
         device = 'cuda'
-        device_count = cuda.device_count()
 
     criterion.to(device)
     metric.to(device)
 
-    if device is not 'cpu' and device_count > 1:
+    if device is not 'cpu' and cuda.device_count() > 1:
         model = nn.DataParallel(model).cuda()
     elif device is not 'cpu':
         model = model.cuda()

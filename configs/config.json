@@ -1,7 +1,7 @@
 {
   "epochs": 20,
   "cuda_usage": false,
-  "img_size": [728, 728],
+  "img_size": [512, 512],
   "batch_size": 5,
   "workers_num": 1,
   "learning_rate": 1e-5,
