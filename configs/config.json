@@ -1,4 +1,5 @@
 {
+  "model_type": "resnet18",
   "epochs": 20,
   "cuda_usage": false,
   "img_size": [512, 512],

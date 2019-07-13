@@ -4,14 +4,14 @@ import os
 from pathlib import Path
 
 from torch import cuda, nn, optim, save
-#from imgaug import augmenters as iaa
 from albumentations import Compose, Resize, Normalize
 from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
 from train_val import train, val
 from datasets.dataset import CustomDataset
 from metrics.confus_matrix import ConfMatrix
-from models.model import CustomResnet18
+from utils.util import get_models_selector
+#from models.model import CustomResnet18
 
 def get_data_loaders(path_to_data, transforms, transforms_val, batch_size=1, workers_num=1):
     if path_to_data['train_img'] is not None and path_to_data['train_annot'] is not None:
@@ -45,7 +45,6 @@ def main(config_path):
         raise ValueError('{} is not .json config file'.format(path_to_config))
 
     model_configs = load_json(path_to_config)
-
     path_to_data = model_configs['path_to_data']
     train_model = model_configs['train_model']
     workers_num = model_configs['workers_num']
@@ -56,18 +55,17 @@ def main(config_path):
                           Normalize(
                               mean=[0.485, 0.456, 0.406],
                               std=[0.229, 0.224, 0.225])])
-
     transforms_val = Compose([Resize(*img_size),
-                          Normalize(
-                              mean=[0.485, 0.456, 0.406],
-                              std=[0.229, 0.224, 0.225])])
-
+                              Normalize(
+                                  mean=[0.485, 0.456, 0.406],
+                                  std=[0.229, 0.224, 0.225])])
     data_loaders = get_data_loaders(path_to_data, transforms, transforms_val, batch_size, workers_num)
 
-    model = CustomResnet18(True)
+    model_selector = get_models_selector()
+    model_type = model_configs['model_type']
+    model = model_selector[model_type](True)
     criterion = nn.BCEWithLogitsLoss()
     metric = ConfMatrix()
-
 
     device = 'cpu'
     if cuda.is_available() and model_configs['cuda_usage']:
