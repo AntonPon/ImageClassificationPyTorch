@@ -3,8 +3,8 @@
   "epochs": 20,
   "cuda_usage": false,
   "img_size": [512, 512],
-  "batch_size": 5,
-  "workers_num": 1,
+  "batch_size": 16,
+  "workers_num": 4,
   "learning_rate": 1e-5,
   "learning_rate_step": 30,
   "path_to_data": {

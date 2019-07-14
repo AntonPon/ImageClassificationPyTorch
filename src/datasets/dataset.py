@@ -7,19 +7,20 @@ import torch
 
 class CustomDataset(Dataset):
 
-    def get_annot_list(self, path_to_annot):
+    def get_annot_list(self, path_to_annot, data_ptah):
         final_list = []
-        ignore_elements = ['2017_24086860.jpg', '2017_17704629.gif', '2017_79148221.gif', '2017_38643152.gif']
         with open(path_to_annot) as file:
             csv_reader = csv.reader(file)
             for row in csv_reader:
-                if row[0] not in ignore_elements:
+                img_full_path = os.path.join(data_path, row[0])
+                img = cv2.imread(img_full_path)
+                if img is not None:
                     final_list.append(row)
         return final_list
 
     def __init__(self, path_to_data, path_to_annot, transforms=None):
         super(CustomDataset, self).__init__()
-        self.annot_list = self.get_annot_list(path_to_annot)
+        self.annot_list = self.get_annot_list(path_to_annot, path_to_data)
         self.data_path = path_to_data
         self.transforms = transforms
 
